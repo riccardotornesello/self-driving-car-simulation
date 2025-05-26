@@ -9,6 +9,7 @@ screen_width = 1500
 screen_height = 800
 generation = 0
 
+
 class Car:
     def __init__(self):
         self.surface = pygame.image.load("car.png")
@@ -44,22 +45,34 @@ class Car:
 
     def check_radar(self, degree, map):
         len = 0
-        x = int(self.center[0] + math.cos(math.radians(360 - (self.angle + degree))) * len)
-        y = int(self.center[1] + math.sin(math.radians(360 - (self.angle + degree))) * len)
+        x = int(
+            self.center[0] + math.cos(math.radians(360 - (self.angle + degree))) * len
+        )
+        y = int(
+            self.center[1] + math.sin(math.radians(360 - (self.angle + degree))) * len
+        )
 
         while not map.get_at((x, y)) == (255, 255, 255, 255) and len < 300:
             len = len + 1
-            x = int(self.center[0] + math.cos(math.radians(360 - (self.angle + degree))) * len)
-            y = int(self.center[1] + math.sin(math.radians(360 - (self.angle + degree))) * len)
+            x = int(
+                self.center[0]
+                + math.cos(math.radians(360 - (self.angle + degree))) * len
+            )
+            y = int(
+                self.center[1]
+                + math.sin(math.radians(360 - (self.angle + degree))) * len
+            )
 
-        dist = int(math.sqrt(math.pow(x - self.center[0], 2) + math.pow(y - self.center[1], 2)))
+        dist = int(
+            math.sqrt(math.pow(x - self.center[0], 2) + math.pow(y - self.center[1], 2))
+        )
         self.radars.append([(x, y), dist])
 
     def update(self, map):
-        #check speed
+        # check speed
         self.speed = 15
 
-        #check position
+        # check position
         self.rotate_surface = self.rot_center(self.surface, self.angle)
         self.pos[0] += math.cos(math.radians(360 - self.angle)) * self.speed
         if self.pos[0] < 20:
@@ -78,10 +91,22 @@ class Car:
         # caculate 4 collision points
         self.center = [int(self.pos[0]) + 50, int(self.pos[1]) + 50]
         len = 40
-        left_top = [self.center[0] + math.cos(math.radians(360 - (self.angle + 30))) * len, self.center[1] + math.sin(math.radians(360 - (self.angle + 30))) * len]
-        right_top = [self.center[0] + math.cos(math.radians(360 - (self.angle + 150))) * len, self.center[1] + math.sin(math.radians(360 - (self.angle + 150))) * len]
-        left_bottom = [self.center[0] + math.cos(math.radians(360 - (self.angle + 210))) * len, self.center[1] + math.sin(math.radians(360 - (self.angle + 210))) * len]
-        right_bottom = [self.center[0] + math.cos(math.radians(360 - (self.angle + 330))) * len, self.center[1] + math.sin(math.radians(360 - (self.angle + 330))) * len]
+        left_top = [
+            self.center[0] + math.cos(math.radians(360 - (self.angle + 30))) * len,
+            self.center[1] + math.sin(math.radians(360 - (self.angle + 30))) * len,
+        ]
+        right_top = [
+            self.center[0] + math.cos(math.radians(360 - (self.angle + 150))) * len,
+            self.center[1] + math.sin(math.radians(360 - (self.angle + 150))) * len,
+        ]
+        left_bottom = [
+            self.center[0] + math.cos(math.radians(360 - (self.angle + 210))) * len,
+            self.center[1] + math.sin(math.radians(360 - (self.angle + 210))) * len,
+        ]
+        right_bottom = [
+            self.center[0] + math.cos(math.radians(360 - (self.angle + 330))) * len,
+            self.center[1] + math.sin(math.radians(360 - (self.angle + 330))) * len,
+        ]
         self.four_points = [left_top, right_top, left_bottom, right_bottom]
 
         self.check_collision(map)
@@ -111,6 +136,7 @@ class Car:
         rot_image = rot_image.subsurface(rot_rect).copy()
         return rot_image
 
+
 def run_car(genomes, config):
 
     # Init NEAT
@@ -131,8 +157,7 @@ def run_car(genomes, config):
     clock = pygame.time.Clock()
     generation_font = pygame.font.SysFont("Arial", 70)
     font = pygame.font.SysFont("Arial", 30)
-    map = pygame.image.load('map.png')
-
+    map = pygame.image.load("map.png")
 
     # Main loop
     global generation
@@ -141,7 +166,6 @@ def run_car(genomes, config):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit(0)
-
 
         # Input my data and get result from network
         for index, car in enumerate(cars):
@@ -170,24 +194,32 @@ def run_car(genomes, config):
             if car.get_alive():
                 car.draw(screen)
 
-        text = generation_font.render("Generation : " + str(generation), True, (255, 255, 0))
+        text = generation_font.render(
+            "Generation : " + str(generation), True, (255, 255, 0)
+        )
         text_rect = text.get_rect()
-        text_rect.center = (screen_width/2, 100)
+        text_rect.center = (screen_width / 2, 100)
         screen.blit(text, text_rect)
 
         text = font.render("remain cars : " + str(remain_cars), True, (0, 0, 0))
         text_rect = text.get_rect()
-        text_rect.center = (screen_width/2, 200)
+        text_rect.center = (screen_width / 2, 200)
         screen.blit(text, text_rect)
 
         pygame.display.flip()
         clock.tick(0)
 
+
 if __name__ == "__main__":
     # Set configuration file
     config_path = "./config-feedforward.txt"
-    config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                                neat.DefaultSpeciesSet, neat.DefaultStagnation, config_path)
+    config = neat.config.Config(
+        neat.DefaultGenome,
+        neat.DefaultReproduction,
+        neat.DefaultSpeciesSet,
+        neat.DefaultStagnation,
+        config_path,
+    )
 
     # Create core evolution algorithm class
     p = neat.Population(config)
