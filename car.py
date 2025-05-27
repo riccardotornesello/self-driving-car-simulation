@@ -11,16 +11,36 @@ class Car:
         self.surface = pygame.transform.scale(self.surface, (100, 100))
         self.rotate_surface = self.surface
         self.pos = [700, 650]
-        self.angle = 0
-        self.speed = 0
         self.center = [self.pos[0] + 50, self.pos[1] + 50]
         self.radars = []
         self.radars_for_draw = []
         self.is_alive = True
-        self.goal = False
         self.distance = 0
         self.time_spent = 0
         self.net = net
+
+        self.angle = 0
+        self.speed = 0
+
+        self.ticks_stopped = 0
+
+    def update_speed(self, throttle):
+        # TODO: use a curve
+
+        min_speed = 0
+        max_speed = 20
+        throttle_multiplier = 5
+
+        self.speed = min(
+            max_speed, max(min_speed, self.speed + throttle * throttle_multiplier)
+        )
+
+    def update_angle(self, steering):
+        # TODO: set max angle based on speed
+
+        max_steering = 10
+
+        self.angle += steering * max_steering
 
     def draw(self, screen):
         screen.blit(self.rotate_surface, self.pos)
@@ -65,9 +85,6 @@ class Car:
         self.radars.append([(x, y), dist])
 
     def update(self, map):
-        # check speed
-        self.speed = 15
-
         # check position
         self.rotate_surface = self.rot_center(self.surface, self.angle)
         self.pos[0] += math.cos(math.radians(360 - self.angle)) * self.speed
@@ -110,6 +127,13 @@ class Car:
         for d in range(-90, 120, 45):
             self.check_radar(d, map)
 
+        # check speed
+        if self.speed < 1:
+            self.ticks_stopped += 1
+
+        if self.ticks_stopped > 10:
+            self.is_alive = False
+
     def get_data(self):
         radars = self.radars
         ret = [0, 0, 0, 0, 0]
@@ -137,7 +161,5 @@ class Car:
         steering = output[0]
         throttle = output[1]
 
-        if steering > 0:
-            self.angle += 10
-        else:
-            self.angle -= 10
+        self.update_speed(throttle)
+        self.update_angle(steering)
