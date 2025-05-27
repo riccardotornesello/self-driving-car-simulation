@@ -1,11 +1,12 @@
 import pygame
 import math
+from neat.nn import FeedForwardNetwork
 
 from constants import screen_width, screen_height
 
 
 class Car:
-    def __init__(self):
+    def __init__(self, net: FeedForwardNetwork):
         self.surface = pygame.image.load("assets/car.png")
         self.surface = pygame.transform.scale(self.surface, (100, 100))
         self.rotate_surface = self.surface
@@ -19,6 +20,7 @@ class Car:
         self.goal = False
         self.distance = 0
         self.time_spent = 0
+        self.net = net
 
     def draw(self, screen):
         screen.blit(self.rotate_surface, self.pos)
@@ -129,3 +131,13 @@ class Car:
         rot_rect.center = rot_image.get_rect().center
         rot_image = rot_image.subsurface(rot_rect).copy()
         return rot_image
+
+    def activate_net(self):
+        output = self.net.activate(self.get_data())
+        steering = output[0]
+        throttle = output[1]
+
+        if steering > 0:
+            self.angle += 10
+        else:
+            self.angle -= 10
