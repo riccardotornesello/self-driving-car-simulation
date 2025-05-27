@@ -7,7 +7,7 @@ from car import Car
 from constants import screen_width, screen_height
 
 
-class Track:
+class Game:
     def __init__(self):
         pygame.init()
 
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     p.add_reporter(stats)
 
     # Init the track
-    track = Track()
+    game = Game()
 
     # Run NEAT
-    p.run(track.run_car, 1000)
+    p.run(game.run_car, 1000)

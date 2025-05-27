@@ -3,10 +3,13 @@ import math
 from neat.nn import FeedForwardNetwork
 
 from constants import screen_width, screen_height
+from car_math import acceleration_from_velocity
 
 
 class Car:
     def __init__(self, net: FeedForwardNetwork):
+        # TODO: reduce car size
+
         self.surface = pygame.image.load("assets/car.png")
         self.surface = pygame.transform.scale(self.surface, (100, 100))
         self.rotate_surface = self.surface
@@ -23,17 +26,27 @@ class Car:
         self.speed = 0
 
         self.ticks_stopped = 0
+        self.max_ticks_stopped = 20
+
+        self.ticks_per_second = 10
+
+        self.vmax = 40
+        self.acc = 0.1
+        self.brake = 0.2
 
     def update_speed(self, throttle):
-        # TODO: use a curve
+        # TODO: use curves to calculate acceleration
 
-        min_speed = 0
-        max_speed = 20
-        throttle_multiplier = 5
+        vinc = 0
 
-        self.speed = min(
-            max_speed, max(min_speed, self.speed + throttle * throttle_multiplier)
-        )
+        if throttle > 0:
+            vinc = acceleration_from_velocity(v=self.speed, vmax=self.vmax, k=self.acc)
+            vinc = vinc * throttle / self.ticks_per_second
+
+        elif throttle < 0:
+            vinc = -self.speed * self.brake
+
+        self.speed = max(0, self.speed + vinc)
 
     def update_angle(self, steering):
         # TODO: set max angle based on speed
@@ -131,14 +144,15 @@ class Car:
         if self.speed < 1:
             self.ticks_stopped += 1
 
-        if self.ticks_stopped > 10:
+        if self.ticks_stopped > self.max_ticks_stopped:
             self.is_alive = False
 
     def get_data(self):
         radars = self.radars
-        ret = [0, 0, 0, 0, 0]
+        ret = [0, 0, 0, 0, 0, 0]
         for i, r in enumerate(radars):
             ret[i] = int(r[1] / 30)
+        ret[5] = self.speed / self.vmax
 
         return ret
 
@@ -157,6 +171,8 @@ class Car:
         return rot_image
 
     def activate_net(self):
+        # TODO: prevent frequent steering changes
+
         output = self.net.activate(self.get_data())
         steering = output[0]
         throttle = output[1]
